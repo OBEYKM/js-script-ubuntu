@@ -1,6 +1,6 @@
 #!/bin/bash
-TARGET="/var/www/emazagame.explicador.co.mz/production"
-GIT_DIR="/var/bare-repos/emazagame.explicador.co.mz-production.git"
+TARGET="/var/www/webbazar.co.mz/production"
+GIT_DIR="/var/bare-repos/webbazar.co.mz-production.git"
 
 # Colors
 red='\033[0;31m'
@@ -13,38 +13,41 @@ do
         # Get brench name
         BRANCH=$(echo "$ref" | cut -d/ -f3)
 
-        if [[ $ref =~ .*/master$ ]];
+        if [[ $ref =~ .*/main$ ]];
         then
 
                 # only checking out the master (or anyother)
                 if git --work-tree=$TARGET --git-dir=$GIT_DIR checkout -f "$BRANCH"; then
                         # Go to work-tree
-
-                        echo -e "\n${green}Deploying production server: e2payments.explicador.co.mz${no_color}\n"
+                        echo -e "\n${green}Deploying Server: webbazar.co.mz${no_color}\n\n"
                         echo -e "\n${green}Intalling dependencies:${no_color}\n"
-                        cd "${TARGET}" && sudo composer install --no-interaction --ignore-platform-reqs
+                        cd "${TARGET}" && sudo composer install --ignore-platform-reqs --no-interaction
 
                         echo -e "\n${green}Running migrations:${no_color}\n"
                         php artisan migrate --force
 
                         echo -e "\n${green}Cleaning cache:${no_color}\n"
-                        php artisan cache:clear
-                        php artisan config:clear
-                        
+                        sudo php artisan cache:clear
+                        sudo php artisan config:clear
+
+                        # Actualização das permissões dos directórios
                         sudo chmod 777 storage -R
-                        sudo chmod 777 boostrap -R
+                        sudo chmod 777 bootstrap -R
+
+                        # Linking storage dir
+                        php artisan storage:link
 
                         # Restart
                         echo -e "\n${green}Restarting nginx app${no_color}\n"
                         sudo service nginx restart
 
                         echo -e "\n${green}**********************************"
-                        echo -e "\nProduction server deployed on: emazagame.explicador.co.mz, successfully"
+                        echo -e "\nLatest files deployed to: webbazar.co.mz"
                         echo -e "\n*********************************${no_color}"
                 else
-                        echo -e "\n${red}Ref $BRANCH successfully received.  Doing nothing: only the master branch may be deployed on this server.${no_color}"
+                        echo -e "\n${red}Ref $BRANCH successfully received.  Doing nothing: only the main branch may be deployed on this server.${no_color}"
                 fi
         else
-                echo -e "\n${red}Ref $BRANCH successfully received.  Doing nothing: only the master branch may be deployed on this server.${no_color}"
+                echo -e "\n${red}Ref $BRANCH successfully received.  Doing nothing: only the main branch may be deployed on this server.${no_color}"
         fi
 done
