@@ -1,0 +1,51 @@
+#!/bin/bash
+# Laravel Permissions configs
+# VERSION 1.0 September 05 2024
+# Org: Explicador Inc
+# Author: Explicador Inc
+
+# Script validation checks
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+# Requesting Laravel Project Path:
+echo ESCREVA O CAMINHO COMPLETO DO SEU PROJECTO LARAVEL NO SERVER;
+read path;
+
+# Handling Change Permissions:
+# Path example: /var/www/prd/teste
+sudo chown -R www-data:www-data $path;
+
+# Username: sa ou ubuntu
+sudo usermod -a -G www-data sa;
+
+sudo find /var/www/prd/teste -type f -exec chmod 644 {} \;
+
+sudo find /var/www/prd/teste -type d -exec chmod 755 {} \;
+
+# Path example: /var/www/prd/teste
+cd $path;
+
+sudo chown -R $USER:www-data .;
+
+sudo find . -type f -exec chmod 664 {} \;
+
+sudo find . -type d -exec chmod 775 {} \;
+
+sudo chgrp -R www-data storage bootstrap/cache;
+
+sudo chmod -R ug+rwx storage bootstrap/cache;
+
+sudo service nginx restart;
+
+echo
+echo
+echo "PARABÉNS, AS PERMISSÕES ESTÃO CONFIGURADAS CORRECTAMENTE NO SEU PROJECTO!";
+echo NESTE CAMINHO: $path;
+echo
+echo
+echo
+echo
+echo
